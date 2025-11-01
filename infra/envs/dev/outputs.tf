@@ -22,3 +22,65 @@ output "glue_endpoint_id" {
   description = "Glue VPC Endpoint ID"
   value       = module.vpc.glue_endpoint_id
 }
+
+output "logs_endpoint_id" {
+  description = "CloudWatch Logs VPC Endpoint ID"
+  value       = module.vpc.logs_endpoint_id
+}
+
+output "sts_endpoint_id" {
+  description = "STS VPC Endpoint ID"
+  value       = module.vpc.sts_endpoint_id
+}
+
+output "ec2_endpoint_id" {
+  description = "EC2 VPC Endpoint ID"
+  value       = module.vpc.ec2_endpoint_id
+}
+
+output "kms_endpoint_id" {
+  description = "KMS VPC Endpoint ID"
+  value       = module.vpc.kms_endpoint_id
+}
+
+# S3 Outputs
+output "raw_bucket" {
+  description = "Raw data bucket name"
+  value       = module.s3.raw_bucket_name
+}
+
+output "silver_bucket" {
+  description = "Silver data bucket name"
+  value       = module.s3.silver_bucket_name
+}
+
+output "gold_bucket" {
+  description = "Gold data bucket name"
+  value       = module.s3.gold_bucket_name
+}
+
+output "logs_bucket" {
+  description = "Logs bucket name"
+  value       = module.s3.logs_bucket_name
+}
+
+output "artifacts_bucket" {
+  description = "Artifacts bucket name"
+  value       = module.s3.artifacts_bucket_name
+}
+
+# Glue Outputs
+output "bronze_database" {
+  description = "Bronze Glue database name"
+  value       = module.glue.bronze_database_name
+}
+
+output "silver_database" {
+  description = "Silver Glue database name"
+  value       = module.glue.silver_database_name
+}
+
+output "gold_database" {
+  description = "Gold Glue database name"
+  value       = module.glue.gold_database_name
+}
