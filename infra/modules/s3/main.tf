@@ -47,11 +47,18 @@ resource "aws_s3_bucket_public_access_block" "raw" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_logging" "raw" {
+  bucket = aws_s3_bucket.raw.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/raw/"
+}
+
 resource "aws_s3_bucket_lifecycle_configuration" "raw" {
   bucket = aws_s3_bucket.raw.id
 
   rule {
-    id     = "transition-to-ia"
+    id     = "transition-to-ia-then-glacier"
     status = "Enabled"
 
     filter {}
@@ -59,6 +66,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "raw" {
     transition {
       days          = var.raw_lifecycle_days
       storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = var.raw_glacier_days
+      storage_class = "DEEP_ARCHIVE"
     }
 
     noncurrent_version_expiration {
@@ -105,6 +117,13 @@ resource "aws_s3_bucket_public_access_block" "silver" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_logging" "silver" {
+  bucket = aws_s3_bucket.silver.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/silver/"
+}
+
 # Gold Data Bucket
 resource "aws_s3_bucket" "gold" {
   bucket = local.buckets.gold
@@ -141,6 +160,13 @@ resource "aws_s3_bucket_public_access_block" "gold" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_logging" "gold" {
+  bucket = aws_s3_bucket.gold.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/gold/"
 }
 
 # Logs Bucket
@@ -182,7 +208,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
     filter {}
 
     expiration {
-      days = var.logs_retention_days
+      days = 180
     }
   }
 }
@@ -222,4 +248,31 @@ resource "aws_s3_bucket_public_access_block" "artifacts" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_logging" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/artifacts/"
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
+
+  rule {
+    id     = "transition-to-ia"
+    status = "Enabled"
+
+    filter {}
+
+    transition {
+      days          = var.artifacts_ia_days
+      storage_class = "STANDARD_IA"
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 180
+    }
+  }
 }

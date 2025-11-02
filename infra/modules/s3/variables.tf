@@ -30,3 +30,15 @@ variable "logs_retention_days" {
   type        = number
   default     = 30
 }
+
+variable "raw_glacier_days" {
+  description = "Days before transitioning raw data to Glacier Deep Archive"
+  type        = number
+  default     = 180
+}
+
+variable "artifacts_ia_days" {
+  description = "Days before transitioning artifacts to Infrequent Access"
+  type        = number
+  default     = 90
+}

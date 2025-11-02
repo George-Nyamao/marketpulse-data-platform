@@ -1,0 +1,158 @@
+==========================================
+  M1 INFRASTRUCTURE VALIDATION
+==========================================
+
+Using AWS Profile: marketpulse
+{
+    "UserId": "AIDAXNEQLA66P6KQCKV3B",
+    "Account": "509256337340",
+    "Arn": "arn:aws:iam::509256337340:user/moraran"
+}
+
+📦 Validating S3 Buckets...
+
+1. Raw Bucket: marketpulse-moraran-dev-raw
+   Versioning:
+{
+    "Status": "Enabled"
+}
+
+   Encryption:
+{
+    "ServerSideEncryptionConfiguration": {
+        "Rules": [
+            {
+                "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                },
+                "BucketKeyEnabled": false
+            }
+        ]
+    }
+}
+
+   Logging:
+{
+    "LoggingEnabled": {
+        "TargetBucket": "marketpulse-moraran-dev-logs",
+        "TargetPrefix": "s3-access-logs/raw/"
+    }
+}
+
+   Lifecycle:
+{
+  "id": null,
+  "status": "Enabled",
+  "transitions": [
+    {
+      "Days": 180,
+      "StorageClass": "DEEP_ARCHIVE"
+    },
+    {
+      "Days": 90,
+      "StorageClass": "STANDARD_IA"
+    }
+  ]
+}
+
+2. Silver Bucket: marketpulse-moraran-dev-silver
+   Logging:
+{
+    "LoggingEnabled": {
+        "TargetBucket": "marketpulse-moraran-dev-logs",
+        "TargetPrefix": "s3-access-logs/silver/"
+    }
+}
+
+3. Gold Bucket: marketpulse-moraran-dev-gold
+   Logging:
+{
+    "LoggingEnabled": {
+        "TargetBucket": "marketpulse-moraran-dev-logs",
+        "TargetPrefix": "s3-access-logs/gold/"
+    }
+}
+
+4. Artifacts Bucket: marketpulse-moraran-dev-artifacts
+   Logging:
+{
+    "LoggingEnabled": {
+        "TargetBucket": "marketpulse-moraran-dev-logs",
+        "TargetPrefix": "s3-access-logs/artifacts/"
+    }
+}
+
+   Lifecycle:
+{
+  "id": null,
+  "status": "Enabled",
+  "transitions": [
+    {
+      "Days": 90,
+      "StorageClass": "STANDARD_IA"
+    }
+  ]
+}
+
+5. Logs Bucket: marketpulse-moraran-dev-logs
+   Lifecycle:
+{
+  "id": null,
+  "status": "Enabled",
+  "expiration": {
+    "Days": 180
+  }
+}
+
+🗄️  Validating Glue Databases...
+
+1. Bronze Database: marketpulse_dev_bronze
+{
+  "Name": "marketpulse_dev_bronze",
+  "Description": "Bronze layer - raw ingested data",
+  "LocationUri": "s3://marketpulse-moraran-dev-raw/"
+}
+
+2. Gold Database: marketpulse_dev_gold
+{
+  "Name": "marketpulse_dev_gold",
+  "Description": "Gold layer - business-ready aggregations and models",
+  "LocationUri": "s3://marketpulse-moraran-dev-gold/"
+}
+
+🔌 Validating VPC Endpoints...
+
+{
+  "ServiceName": "com.amazonaws.us-east-2.s3",
+  "State": "available",
+  "VpcEndpointType": "Gateway"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.glue",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.sts",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.ec2",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.logs",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.kms",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+
+==========================================
+✅ M1 VALIDATION COMPLETE
+==========================================
