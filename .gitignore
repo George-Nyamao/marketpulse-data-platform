@@ -28,3 +28,101 @@ credentials.csv
 # TXT files
 *.log
 history.txt
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+*.old
+
+# Logs and history
+history.txt
+*.log
+
+# Session notes (keep in docs/ but ignore root-level)
+/session-*.md
+/notes.txt
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+env/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+credentials.csv
+.env
+.env.local
+secrets/
+
+# Data files (large datasets)
+*.parquet
+*.csv
+*.json
+!**/schemas/*.json
+data/
+*.gz
+*.zip
+*.tar
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
