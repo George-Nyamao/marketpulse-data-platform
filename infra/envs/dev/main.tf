@@ -27,3 +27,14 @@ module "glue" {
   silver_bucket_name  = module.s3.silver_bucket_name
   gold_bucket_name    = module.s3.gold_bucket_name
 }
+
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name       = var.project_name
+  environment        = terraform.workspace
+  raw_bucket_arn     = module.s3.raw_bucket_arn
+  silver_bucket_arn  = module.s3.silver_bucket_arn
+  gold_bucket_arn    = module.s3.gold_bucket_arn
+  logs_bucket_arn    = module.s3.logs_bucket_arn
+}

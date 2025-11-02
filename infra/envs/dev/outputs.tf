@@ -84,3 +84,14 @@ output "gold_database" {
   description = "Gold Glue database name"
   value       = module.glue.gold_database_name
 }
+
+# IAM Outputs
+output "glue_service_role_arn" {
+  description = "Glue service role ARN"
+  value       = module.iam.glue_service_role_arn
+}
+
+output "glue_service_role_name" {
+  description = "Glue service role name"
+  value       = module.iam.glue_service_role_name
+}

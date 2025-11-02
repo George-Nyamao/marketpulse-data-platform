@@ -53,3 +53,8 @@ output "all_bucket_names" {
     artifacts = aws_s3_bucket.artifacts.id
   }
 }
+
+output "logs_bucket_arn" {
+  description = "Logs bucket ARN"
+  value       = aws_s3_bucket.logs.arn
+}

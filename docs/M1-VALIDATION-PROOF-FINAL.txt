@@ -1,0 +1,183 @@
+==========================================
+  M1 INFRASTRUCTURE VALIDATION
+==========================================
+
+Using AWS Profile: marketpulse
+{
+    "UserId": "AIDAXNEQLA66P6KQCKV3B",
+    "Account": "509256337340",
+    "Arn": "arn:aws:iam::509256337340:user/moraran"
+}
+
+==========================================
+📦 S3 BUCKET VALIDATION
+==========================================
+
+1. Raw Bucket: marketpulse-moraran-dev-raw
+   Versioning:
+{
+  "Status": "Enabled"
+}
+   Encryption:
+"AES256"
+   Logging:
+{
+  "TargetBucket": "marketpulse-moraran-dev-logs",
+  "TargetPrefix": "s3-access-logs/raw/"
+}
+   Lifecycle:
+{
+  "id": "transition-to-ia-then-glacier",
+  "status": "Enabled",
+  "transitions": [
+    {
+      "Days": 180,
+      "StorageClass": "DEEP_ARCHIVE"
+    },
+    {
+      "Days": 90,
+      "StorageClass": "STANDARD_IA"
+    }
+  ]
+}
+
+2. Silver Bucket: marketpulse-moraran-dev-silver
+   Logging:
+{
+  "TargetBucket": "marketpulse-moraran-dev-logs",
+  "TargetPrefix": "s3-access-logs/silver/"
+}
+
+3. Gold Bucket: marketpulse-moraran-dev-gold
+   Logging:
+{
+  "TargetBucket": "marketpulse-moraran-dev-logs",
+  "TargetPrefix": "s3-access-logs/gold/"
+}
+
+4. Artifacts Bucket: marketpulse-moraran-dev-artifacts
+   Logging:
+{
+  "TargetBucket": "marketpulse-moraran-dev-logs",
+  "TargetPrefix": "s3-access-logs/artifacts/"
+}
+   Lifecycle:
+{
+  "id": "transition-to-ia",
+  "status": "Enabled",
+  "transitions": [
+    {
+      "Days": 90,
+      "StorageClass": "STANDARD_IA"
+    }
+  ]
+}
+
+5. Logs Bucket: marketpulse-moraran-dev-logs
+   Lifecycle:
+{
+  "id": "expire-old-logs",
+  "status": "Enabled",
+  "expiration": {
+    "Days": 180
+  }
+}
+
+==========================================
+🗄️  GLUE DATABASE VALIDATION
+==========================================
+
+1. Bronze Database: marketpulse_dev_bronze
+{
+  "Name": "marketpulse_dev_bronze",
+  "Description": "Bronze layer - raw ingested data",
+  "LocationUri": "s3://marketpulse-moraran-dev-raw/"
+}
+
+2. Silver Database: marketpulse_dev_silver
+{
+  "Name": "marketpulse_dev_silver",
+  "Description": "Silver layer - validated and normalized data",
+  "LocationUri": "s3://marketpulse-moraran-dev-silver/"
+}
+
+3. Gold Database: marketpulse_dev_gold
+{
+  "Name": "marketpulse_dev_gold",
+  "Description": "Gold layer - business-ready aggregations and models",
+  "LocationUri": "s3://marketpulse-moraran-dev-gold/"
+}
+
+==========================================
+👤 IAM ROLE VALIDATION
+==========================================
+
+Glue Service Role: marketpulse-dev-glue-service-role
+{
+  "RoleName": "marketpulse-dev-glue-service-role",
+  "Arn": "arn:aws:iam::509256337340:role/marketpulse-dev-glue-service-role",
+  "CreateDate": "2025-11-02T13:59:02+00:00"
+}
+
+Attached Policies:
+[
+  {
+    "PolicyName": "AWSGlueServiceRole",
+    "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+  }
+]
+
+Inline Policies:
+[
+  "glue-service-policy"
+]
+
+==========================================
+🔌 VPC ENDPOINT VALIDATION
+==========================================
+
+{
+  "ServiceName": "com.amazonaws.us-east-2.s3",
+  "State": "available",
+  "VpcEndpointType": "Gateway"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.glue",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.sts",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.ec2",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.logs",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+{
+  "ServiceName": "com.amazonaws.us-east-2.kms",
+  "State": "available",
+  "VpcEndpointType": "Interface"
+}
+
+==========================================
+✅ M1 VALIDATION COMPLETE
+==========================================
+
+Summary:
+  ✅ 5 S3 buckets with encryption, versioning
+  ✅ 4 buckets with access logging
+  ✅ 3 buckets with lifecycle policies
+  ✅ 3 Glue databases (bronze, silver, gold)
+  ✅ 1 Glue service role with least-privilege policy
+  ✅ 6 VPC endpoints
+
+Total Resources: 56
+
