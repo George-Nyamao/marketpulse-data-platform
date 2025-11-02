@@ -34,3 +34,39 @@ terraform apply -auto-approve
 - Document bucket naming convention
 - Commit to GitHub
 
+
+## Milestone 1 ✅ COMPLETE (Storage & Catalog)
+
+### Resources Created:
+**S3 Buckets:**
+- raw: marketpulse-moraran-dev-raw
+- silver: marketpulse-moraran-dev-silver
+- gold: marketpulse-moraran-dev-gold
+- logs: marketpulse-moraran-dev-logs
+- artifacts: marketpulse-moraran-dev-artifacts
+
+**Glue Databases:**
+- marketpulse_dev_bronze
+- marketpulse_dev_silver
+- marketpulse_dev_gold
+
+### Key Decisions:
+- Versioning enabled on data layers (raw/silver/gold/artifacts)
+- AES256 encryption (not KMS to save costs in dev)
+- Lifecycle: raw data → IA after 90 days
+- Logs expire after 30 days
+- Naming: {project}-{suffix}-{env}-{layer}
+
+### Total Infrastructure So Far:
+- M0: 23 resources (VPC, endpoints, flow logs)
+- M1: 24 resources (buckets, Glue DBs)
+- **Total: 47 resources**
+
+---
+
+## Milestone 2 🎯 NEXT: EMR Cluster Provisioning
+- Create IAM roles (EMR service role, EC2 instance profile)
+- EMR cluster module (core + task node groups)
+- Autoscaling policy
+- Bootstrap actions
+- Security configurations
