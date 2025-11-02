@@ -70,3 +70,39 @@ terraform apply -auto-approve
 - Autoscaling policy
 - Bootstrap actions
 - Security configurations
+
+---
+
+## Milestone 2 🚧 IN PROGRESS (EMR Cluster)
+
+### Current Status:
+- Created IAM module for EMR roles
+- Next: Create EMR cluster module
+
+### IAM Resources (Ready to Apply):
+**Roles:**
+- EMR Service Role: marketpulse-dev-emr-service-role
+- EMR EC2 Role: marketpulse-dev-emr-ec2-role
+- EMR Autoscaling Role: marketpulse-dev-emr-autoscaling-role
+
+**Instance Profile:**
+- marketpulse-dev-emr-ec2-instance-profile
+
+**Permissions:**
+- S3 access to all project buckets (raw/silver/gold/logs/artifacts)
+- Glue catalog read/write
+- CloudWatch Logs write
+
+### Next Steps:
+1. Apply IAM module
+2. Create EMR module (cluster config, security groups, bootstrap)
+3. Test with SparkPi example
+4. Document autoscaling configuration
+
+### Commands to Resume:
+'''bash
+cd infra/envs/dev
+terraform init
+terraform plan   # Should show ~7 IAM resources
+terraform apply
+'''
