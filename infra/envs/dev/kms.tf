@@ -1,6 +1,6 @@
 # KMS Key for Glue/EMR encryption
 resource "aws_kms_key" "glue_encryption" {
-  description             = "KMS key for Glue encryption"
+  description             = "KMS key for Glue and EMR encryption"
   deletion_window_in_days = 10
   enable_key_rotation     = true
 
@@ -30,8 +30,22 @@ resource "aws_kms_key" "glue_encryption" {
           "kms:DescribeKey"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowEMRServiceRoleToUseKey"
+        Effect = "Allow"
+        Principal = {
+          AWS = module.iam.emr_ec2_role_arn
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
       }
-      # EMR role will be added in M2
     ]
   })
 

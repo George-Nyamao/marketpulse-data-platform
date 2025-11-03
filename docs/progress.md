@@ -186,3 +186,41 @@ terraform apply
 
 **Next: M2 (EMR Cluster)**
 
+
+---
+
+## M2 Code Complete - 2024-11-03
+
+### Status: ✅ CODE COMPLETE (Deployment Deferred)
+
+**Infrastructure Code Ready: 13 Resources**
+- EMR Cluster: 1 (emr-6.15.0, Spark 3.4.1)
+- Security Groups: 3
+- Security Group Rules: 9
+
+**Total Project Resources: 79 (66 deployed + 13 pending)**
+
+### Key Decisions
+- EMR 6.15.0 (latest stable 6.x)
+- Private subnets only (no public IPs)
+- Auto-termination: 30 min idle
+- Master + 2 Core nodes (m5.xlarge)
+- Cost: ~$0.576/hour when running
+
+### IAM Roles Created
+- EMR Service Role: marketpulse-dev-emr-service-role
+- EMR EC2 Instance Profile: marketpulse-dev-emr-ec2-profile
+- KMS key policy updated for EMR access
+
+### Documentation Complete
+- M2-DESIGN.md (design decisions)
+- M2-IMPLEMENTATION.md (deployment guide)
+
+### Deployment Deferred
+Cluster code complete but not deployed to control costs. Will deploy when ready for actual testing.
+
+**Deploy command:** `terraform apply -auto-approve`
+**Estimated cost:** $13.82/day if running 24/7, auto-terminates after 30 min idle
+
+**Next: Deploy when ready, then M3 (Data Generators)**
+

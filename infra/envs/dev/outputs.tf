@@ -111,3 +111,40 @@ output "kms_alias_name" {
   description = "KMS key alias name"
   value       = aws_kms_alias.glue_encryption.name
 }
+
+# EMR IAM Outputs
+output "emr_service_role_arn" {
+  description = "EMR service role ARN"
+  value       = module.iam.emr_service_role_arn
+}
+
+output "emr_service_role_name" {
+  description = "EMR service role name"
+  value       = module.iam.emr_service_role_name
+}
+
+output "emr_ec2_instance_profile_arn" {
+  description = "EMR EC2 instance profile ARN"
+  value       = module.iam.emr_ec2_instance_profile_arn
+}
+
+output "emr_ec2_instance_profile_name" {
+  description = "EMR EC2 instance profile name"
+  value       = module.iam.emr_ec2_instance_profile_name
+}
+
+# EMR Cluster Outputs
+output "emr_cluster_id" {
+  description = "EMR cluster ID"
+  value       = module.emr.cluster_id
+}
+
+output "emr_cluster_name" {
+  description = "EMR cluster name"
+  value       = module.emr.cluster_name
+}
+
+output "emr_master_security_group_id" {
+  description = "EMR master security group ID"
+  value       = module.emr.master_security_group_id
+}

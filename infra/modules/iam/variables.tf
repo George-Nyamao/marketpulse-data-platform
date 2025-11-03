@@ -32,3 +32,18 @@ variable "kms_key_arn" {
   description = "ARN of the KMS key"
   type        = string
 }
+
+variable "artifacts_bucket_arn" {
+  description = "ARN of artifacts bucket"
+  type        = string
+}
+
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
+variable "region" {
+  description = "AWS Region"
+  type        = string
+}
