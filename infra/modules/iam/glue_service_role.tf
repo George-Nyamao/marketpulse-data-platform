@@ -10,6 +10,10 @@ resource "aws_iam_role" "glue_service" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 data "aws_iam_policy_document" "glue_assume_role" {
   statement {
     effect = "Allow"
@@ -86,7 +90,11 @@ data "aws_iam_policy_document" "glue_service_policy" {
       "glue:CreatePartition",
       "glue:BatchCreatePartition"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:glue:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:catalog",
+      "arn:aws:glue:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:database/${var.project_name}_${var.environment}_*",
+      "arn:aws:glue:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.project_name}_${var.environment}_*/*"
+    ]
   }
 
   # CloudWatch Logs
@@ -99,13 +107,22 @@ data "aws_iam_policy_document" "glue_service_policy" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:*:*:/aws-glue/*"
+      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws-glue/jobs/*",
+      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws-glue/jobs/*:log-stream:*"
     ]
+  }
+
+  # KMS Permissions
+  statement {
+    sid    = "KmsPermissions"
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:GenerateDataKey*",
+      "kms:Decrypt",
+      "kms:DescribeKey"
+    ]
+    resources = [var.kms_key_arn]
   }
 }
 
-# Attach AWS managed Glue service policy
-resource "aws_iam_role_policy_attachment" "glue_service" {
-  role       = aws_iam_role.glue_service.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
-}

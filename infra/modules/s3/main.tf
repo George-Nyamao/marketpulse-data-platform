@@ -64,7 +64,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "raw" {
     filter {}
 
     transition {
-      days          = var.raw_lifecycle_days
+      days          = 30
       storage_class = "STANDARD_IA"
     }
 
@@ -75,6 +75,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "raw" {
 
     noncurrent_version_expiration {
       noncurrent_days = 90
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
   }
 }
@@ -124,6 +128,25 @@ resource "aws_s3_bucket_logging" "silver" {
   target_prefix = "s3-access-logs/silver/"
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "silver" {
+  bucket = aws_s3_bucket.silver.id
+
+  rule {
+    id     = "expire-noncurrent-versions"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
 # Gold Data Bucket
 resource "aws_s3_bucket" "gold" {
   bucket = local.buckets.gold
@@ -169,6 +192,25 @@ resource "aws_s3_bucket_logging" "gold" {
   target_prefix = "s3-access-logs/gold/"
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "gold" {
+  bucket = aws_s3_bucket.gold.id
+
+  rule {
+    id     = "expire-noncurrent-versions"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
 # Logs Bucket
 resource "aws_s3_bucket" "logs" {
   bucket = local.buckets.logs
@@ -176,6 +218,14 @@ resource "aws_s3_bucket" "logs" {
   tags = {
     Name    = local.buckets.logs
     Purpose = "Logs"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "logs" {
+  bucket = aws_s3_bucket.logs.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
@@ -209,6 +259,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
 
     expiration {
       days = 180
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
   }
 }
@@ -273,6 +327,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
 
     noncurrent_version_expiration {
       noncurrent_days = 180
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
   }
 }

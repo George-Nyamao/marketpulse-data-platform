@@ -33,6 +33,11 @@ output "logs_bucket_name" {
   value       = aws_s3_bucket.logs.id
 }
 
+output "logs_bucket_arn" {
+  description = "Logs bucket ARN"
+  value       = aws_s3_bucket.logs.arn
+}
+
 output "artifacts_bucket_name" {
   description = "Artifacts bucket name"
   value       = aws_s3_bucket.artifacts.id
@@ -54,7 +59,3 @@ output "all_bucket_names" {
   }
 }
 
-output "logs_bucket_arn" {
-  description = "Logs bucket ARN"
-  value       = aws_s3_bucket.logs.arn
-}

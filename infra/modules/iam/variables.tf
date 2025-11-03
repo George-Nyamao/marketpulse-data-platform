@@ -27,3 +27,8 @@ variable "logs_bucket_arn" {
   description = "ARN of logs bucket"
   type        = string
 }
+
+variable "kms_key_arn" {
+  description = "ARN of the KMS key"
+  type        = string
+}

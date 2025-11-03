@@ -94,10 +94,16 @@ resource "aws_vpc_endpoint" "s3" {
         Principal = "*"
         Action    = "s3:*"
         Resource = [
-          "arn:aws:s3:::marketpulse-moraran-*/*",
-          "arn:aws:s3:::marketpulse-moraran-*",
-          "arn:aws:s3:::tfstate-moraran-global/*",
-          "arn:aws:s3:::tfstate-moraran-global"
+          var.raw_bucket_arn,
+          "${var.raw_bucket_arn}/*",
+          var.silver_bucket_arn,
+          "${var.silver_bucket_arn}/*",
+          var.gold_bucket_arn,
+          "${var.gold_bucket_arn}/*",
+          var.logs_bucket_arn,
+          "${var.logs_bucket_arn}/*",
+          var.artifacts_bucket_arn,
+          "${var.artifacts_bucket_arn}/*"
         ]
       }
     ]

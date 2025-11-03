@@ -95,3 +95,19 @@ output "glue_service_role_name" {
   description = "Glue service role name"
   value       = module.iam.glue_service_role_name
 }
+
+# KMS Outputs
+output "kms_key_id" {
+  description = "KMS key ID for Glue encryption"
+  value       = aws_kms_key.glue_encryption.id
+}
+
+output "kms_key_arn" {
+  description = "KMS key ARN for Glue encryption"
+  value       = aws_kms_key.glue_encryption.arn
+}
+
+output "kms_alias_name" {
+  description = "KMS key alias name"
+  value       = aws_kms_alias.glue_encryption.name
+}

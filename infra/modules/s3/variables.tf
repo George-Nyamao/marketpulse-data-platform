@@ -42,3 +42,14 @@ variable "artifacts_ia_days" {
   type        = number
   default     = 90
 }
+
+variable "s3_endpoint_id" {
+  description = "ID of the S3 VPC endpoint"
+  type        = string
+}
+
+variable "allowed_deployer_arns" {
+  description = "List of ARNs allowed to bypass S3 bucket policy restrictions during deployment"
+  type        = list(string)
+  default     = []
+}
