@@ -11,14 +11,21 @@ terraform {
 
 provider "aws" {
   region  = "us-east-2"
-  profile = "marketpulse"
+  profile = "marketpulse-prod"
 
   default_tags {
     tags = {
       Project     = "MarketPulse"
+      Environment = "prod"
       ManagedBy   = "Terraform"
-      Environment = "global"
       Owner       = "moraran"
+      Account     = "production"
     }
   }
+}
+
+provider "aws" {
+  alias   = "dev"
+  region  = "us-east-2"
+  profile = "marketpulse"
 }

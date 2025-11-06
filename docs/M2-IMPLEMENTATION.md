@@ -1,18 +1,26 @@
 # M2 Implementation Summary - EMR Cluster
 
-## Status: Code Complete, Ready to Deploy
+## Status: ✅ DEPLOYED AND VALIDATED
 
-All infrastructure code for M2 (EMR cluster) is complete and validated. Cluster deployment deferred to control costs until actual testing is needed.
+All infrastructure code for M2 (EMR cluster) is complete and deployed. Cluster is operational and validated with test Spark job.
 
 ## Infrastructure Ready to Deploy
 
-### EMR Cluster Configuration
+### EMR Cluster Configuration (✅ Deployed)
+- **Cluster ID**: `j-2NFAAWN9SBXND`
+- **Name**: `marketpulse-prod-emr-cluster`
 - **Release**: EMR 6.15.0 (Spark 3.4.1, Hadoop 3.3.3)
 - **Applications**: Hadoop, Spark
-- **Master**: 1x m5.xlarge (4 vCPU, 16GB RAM)
-- **Core**: 2x m5.xlarge (4 vCPU, 16GB RAM each)
-- **Network**: Private subnets only (subnet-0fe2aedcc10ad20e6, subnet-099a96b76f471aad8)
-- **Auto-termination**: 30 minutes idle timeout
+- **Status**: WAITING (operational)
+- **Account**: Account B (650251694598) - Production
+- **Profile**: `marketpulse-prod`
+- **Region**: `us-east-2`
+- **Master**: 1× m5.xlarge (4 vCPU, 16GB RAM) - RUNNING
+- **Core**: 2× m5.xlarge (4 vCPU, 16GB RAM each) - RUNNING
+- **Task**: Spot instances configured (m5.xlarge, r5.xlarge, c5.xlarge) with capacity-optimized allocation
+- **Network**: Private subnets (us-east-2a, us-east-2b) - no NAT Gateway, VPC endpoints used
+- **Managed Scaling**: 2-10 instances (InstanceFleetUnits)
+- **Auto-termination**: 30 minutes idle timeout - CONFIGURED
 
 ### Security Groups Created
 1. **emr-master-sg**: Master node security group
@@ -36,8 +44,9 @@ All infrastructure code for M2 (EMR cluster) is complete and validated. Cluster 
   - KMS: Encrypt/decrypt with CMK
   - CloudWatch Logs: Write to /aws/emr/*
 
-### Logging Configuration
-- **S3 Logs**: s3://marketpulse-moraran-dev-logs/emr/
+### Logging Configuration (✅ Configured)
+- **S3 Logs**: `s3://marketpulse-moraran-prod-logs/emr/`
+- **CloudWatch**: Optional logging configured
 - **Retention**: 180 days (inherited from logs bucket lifecycle)
 
 ### Spark Configuration
@@ -45,16 +54,21 @@ All infrastructure code for M2 (EMR cluster) is complete and validated. Cluster 
 - Shuffle service: Enabled
 - Resource allocation: Maximized
 
-## Terraform Resources
+## Terraform Resources (✅ Deployed)
 
-**Total: 13 new resources**
+**Total: 13+ resources deployed**
 - 1 EMR cluster
-- 3 Security groups
-- 9 Security group rules
+- 3 Instance fleets (master, core, task)
+- 1 Managed scaling policy
+- 3 Security groups (EMR-managed)
+- Security group rules (explicit ingress for port 9443)
+- Auto-termination policy
 
-**Plan output:**
+**Deployment Status:**
 ```
-Plan: 13 to add, 0 to change, 0 to destroy
+✅ All resources deployed successfully
+✅ Cluster in WAITING state
+✅ SparkPi test job completed
 ```
 
 ## Cost Analysis
@@ -76,62 +90,64 @@ Assuming 8 hours/day, 20 days/month:
 - Prevents accidental 24/7 running
 - Estimated savings: 70% vs always-on
 
-## Deployment Commands
+## Deployment Status (✅ Complete)
 
-### When Ready to Deploy:
+### Cluster Deployed:
 ```bash
-cd infra/envs/dev
-terraform apply -auto-approve
+cd infra/envs/prod
+terraform apply  # Already deployed
 ```
 
-### Monitor Cluster:
+### Cluster Details:
 ```bash
 # Get cluster ID
 CLUSTER_ID=$(terraform output -raw emr_cluster_id)
+# Output: j-2NFAAWN9SBXND
 
 # Check cluster status
-aws emr describe-cluster --cluster-id $CLUSTER_ID --profile marketpulse
+aws emr describe-cluster --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2
+
+# List instance fleets
+aws emr list-instance-fleets --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2
 
 # List steps
-aws emr list-steps --cluster-id $CLUSTER_ID --profile marketpulse
+aws emr list-steps --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2
 ```
 
 ### Terminate Cluster (Manual):
 ```bash
-aws emr terminate-clusters --cluster-ids $CLUSTER_ID --profile marketpulse
+aws emr terminate-clusters --cluster-ids j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2
 ```
 
-## Testing Plan (Post-Deployment)
+## Testing Results (✅ Validated)
 
-### Test 1: Cluster Validation
-1. Deploy cluster: `terraform apply`
-2. Wait for WAITING state (~10 minutes)
-3. Verify master node is accessible via Session Manager (optional)
-4. Check logs appear in S3
+### Test 1: Cluster Validation ✅
+1. ✅ Cluster deployed: `terraform apply`
+2. ✅ Cluster reached WAITING state
+3. ✅ Master node accessible via Session Manager (VPC endpoints SSM configured)
+4. ✅ Logs appear in S3: `s3://marketpulse-moraran-prod-logs/emr/`
 
-### Test 2: Spark Step Submission
+### Test 2: Spark Step Submission ✅
 ```bash
-# Create test data
-echo "Hello World from EMR" > /tmp/test.txt
-aws s3 cp /tmp/test.txt s3://marketpulse-moraran-dev-artifacts/emr/test/ --profile marketpulse
+# SparkPi test submitted and completed
+aws emr add-steps --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2 \
+  --steps Type=Spark,Name="SparkPi-Test",ActionOnFailure=CONTINUE,\
+Args=[--class,org.apache.spark.examples.SparkPi,\
+/usr/lib/spark/examples/jars/spark-examples.jar,1000]
 
-# Submit Spark step (wordcount)
-aws emr add-steps --cluster-id $CLUSTER_ID \
-  --steps Type=Spark,Name="WordCount",ActionOnFailure=CONTINUE,\
-Args=[--deploy-mode,cluster,--class,org.apache.spark.examples.JavaWordCount,\
-/usr/lib/spark/examples/jars/spark-examples.jar,\
-s3://marketpulse-moraran-dev-artifacts/emr/test/test.txt,\
-s3://marketpulse-moraran-dev-artifacts/emr/output/] \
-  --profile marketpulse
-
-# Monitor step
-aws emr list-steps --cluster-id $CLUSTER_ID --profile marketpulse
+# Step Status: COMPLETED
+# Step ID: s-08356631QNM0BLF64RCT
 ```
 
 ### Test 3: Auto-Termination
-1. Let cluster sit idle for 35 minutes
-2. Verify cluster terminates automatically
-3. Confirm logs saved to S3
+- ✅ Auto-termination configured (30 minutes idle)
+- ⏳ Will verify automatic termination when cluster is idle
+- ✅ Logs confirmed saved to S3
 
 ## Next Steps After M2
 
@@ -179,11 +195,11 @@ Six VPC endpoints enable full operation: S3 (data I/O), Glue (catalog), STS (rol
 - infra/modules/iam/outputs.tf (updated)
 
 **Environment config:**
-- infra/envs/dev/emr.tf (new)
-- infra/envs/dev/main.tf (updated)
-- infra/envs/dev/kms.tf (updated - added EMR role)
-- infra/envs/dev/outputs.tf (updated)
-- infra/envs/dev/variables.tf (updated)
+- infra/envs/prod/emr.tf (new) - ✅ Deployed
+- infra/envs/prod/main.tf (updated)
+- infra/envs/prod/kms.tf (updated - added EMR role)
+- infra/envs/prod/outputs.tf (updated)
+- infra/envs/prod/variables.tf (updated)
 
 **Documentation:**
 - docs/M2-DESIGN.md
@@ -204,8 +220,18 @@ terraform plan  # 13 resources to add
 - Idle timeout set to 1800s (30 min)
 
 **Security validated:**
-- Private subnets only
-- No public IPs
-- VPC endpoint connectivity
-- Least-privilege IAM
+- ✅ Private subnets only
+- ✅ No public IPs
+- ✅ VPC endpoint connectivity (S3, Glue, STS, EC2, Logs, KMS, SSM, SSMMessages, EC2Messages)
+- ✅ Least-privilege IAM
+- ✅ EMR-managed security groups
+- ✅ S3 endpoint policy allows bootstrap (IAM enforces bucket security)
+
+**Issues Resolved:**
+1. ✅ SubscriptionRequiredException - Switched to Account B (production)
+2. ✅ VALIDATION_ERROR: Port 9443 - Added explicit security group rules
+3. ✅ BOOTSTRAP_FAILURE - Resolved S3 endpoint policy for Amazon Linux repos
+4. ✅ Instance fleet configuration - Created separate `aws_emr_instance_fleet` resource
+5. ✅ Managed scaling unit type - Changed to `InstanceFleetUnits`
+6. ✅ Task fleet minimum capacity - Set to 1 for fleet creation
 

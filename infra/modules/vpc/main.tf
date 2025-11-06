@@ -80,12 +80,17 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-# S3 VPC Endpoint (Gateway type) with restricted policy
+# S3 VPC Endpoint (Gateway type)
+# Note: Attached to both route tables for EMR bootstrap access to AWS-managed S3 buckets
+# Gateway endpoints route ALL S3 traffic, so policy restrictions don't prevent routing
+# Security is maintained via IAM bucket policies on project buckets
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.main.id
   service_name    = "com.amazonaws.us-east-2.s3"
   route_table_ids = [aws_route_table.private.id, aws_route_table.public.id]
   
+  # Fully permissive policy - gateway endpoints route all S3 traffic regardless
+  # Security maintained via bucket policies and IAM permissions
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -93,18 +98,7 @@ resource "aws_vpc_endpoint" "s3" {
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:*"
-        Resource = [
-          var.raw_bucket_arn,
-          "${var.raw_bucket_arn}/*",
-          var.silver_bucket_arn,
-          "${var.silver_bucket_arn}/*",
-          var.gold_bucket_arn,
-          "${var.gold_bucket_arn}/*",
-          var.logs_bucket_arn,
-          "${var.logs_bucket_arn}/*",
-          var.artifacts_bucket_arn,
-          "${var.artifacts_bucket_arn}/*"
-        ]
+        Resource  = "*"
       }
     ]
   })
@@ -181,6 +175,46 @@ resource "aws_vpc_endpoint" "kms" {
 
   tags = {
     Name = "${var.project_name}-${var.environment}-kms-endpoint"
+  }
+}
+
+# SSM VPC Endpoints (for Session Manager access to EMR nodes)
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-2.ssm"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ssm-endpoint"
+  }
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-2.ssmmessages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ssmmessages-endpoint"
+  }
+}
+
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-2.ec2messages"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ec2messages-endpoint"
   }
 }
 
@@ -271,4 +305,36 @@ resource "aws_flow_log" "main" {
   tags = {
     Name = "${var.project_name}-${var.environment}-vpc-flow-log"
   }
+}
+
+# NAT Gateway for private subnet internet access
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-nat-eip"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-nat-gateway"
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_route" "private_nat_gateway" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main.id
 }

@@ -30,7 +30,7 @@ credentials.csv
 history.txt
 
 # Backup files
-*.backup
+*.backup*
 *.bak
 *.tmp
 *.old
@@ -126,3 +126,9 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
+# Markdown
+SESSION_HANDOFF.md
+docs/gemini-context.md
+
+# Bash
+*.sh

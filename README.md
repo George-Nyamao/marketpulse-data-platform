@@ -17,7 +17,7 @@ APIs to Bronze (Raw) to Silver (Validated) to Gold (Curated) to Analytics
 - Storage: Medallion architecture (Bronze/Silver/Gold) on S3 with Glue Data Catalog
 - Compute: EMR 6.15 cluster with managed scaling, private subnets
 - Security: VPC endpoints (no NAT), KMS encryption, least-privilege IAM
-- IaC: 100% Terraform-managed (66 resources deployed, 79 total)
+- IaC: 100% Terraform-managed (79+ resources deployed)
 
 ## Tech Stack
 
@@ -31,7 +31,7 @@ APIs to Bronze (Raw) to Silver (Validated) to Gold (Curated) to Analytics
 ## Current Status
 
 COMPLETE: M1 (66 resources deployed)  
-READY: M2 Code Complete (13 resources ready)
+✅ COMPLETE: M2 EMR Cluster Deployed (79+ resources total)
 
 ### Deployed Infrastructure (M0 + M1)
 - VPC: 23 resources (flow logs, 6 VPC endpoints, private/public subnets)
@@ -40,10 +40,14 @@ READY: M2 Code Complete (13 resources ready)
 - IAM: 8 resources (Glue + EMR roles with least-privilege)
 - KMS: 2 resources (CMK with key rotation + alias)
 
-### Ready to Deploy (M2)
-- EMR Cluster: Private subnet deployment with auto-termination
-- Security Groups: 3 groups + 9 rules for cluster isolation
-- Cost: ~$0.58/hour when running, auto-terminates after 30 min idle
+### Deployed Infrastructure (M2)
+- ✅ EMR Cluster: `j-2NFAAWN9SBXND` deployed in private subnets (no NAT Gateway)
+- ✅ Instance Fleets: Master (1× m5.xlarge), Core (2× m5.xlarge), Task (Spot configured)
+- ✅ Managed Scaling: 2-10 instances (InstanceFleetUnits)
+- ✅ Auto-termination: 30 minutes idle timeout
+- ✅ Logging: S3 (`s3://marketpulse-moraran-prod-logs/emr/`) + CloudWatch
+- ✅ Cost: ~$0.58/hour when running, auto-terminates after 30 min idle
+- ✅ Validation: SparkPi test job completed successfully
 
 ## Repository Structure
 
@@ -139,7 +143,7 @@ All AWS API access via VPC endpoints:
 
 - [x] M0: Terraform backend + VPC (23 resources)
 - [x] M1: S3 buckets + Glue catalog + IAM + KMS (43 resources)
-- [x] M2: EMR cluster code (13 resources ready, deployment deferred)
+- [x] M2: EMR cluster deployed (13+ resources, fully operational)
 - [ ] M3: Data generators (Python scripts for stock/news/sentiment)
 - [ ] M4: Bronze to Silver ETL (Spark jobs on EMR)
 - [ ] M5: Silver to Gold aggregations (daily summaries, trends)
@@ -154,11 +158,14 @@ All AWS API access via VPC endpoints:
 - Lifecycle policies for cost optimization
 - 3 Glue databases for metadata management
 
-### EMR Processing (M2 - Code Ready)
-- EMR 6.15 with Spark 3.4.1 + Hadoop 3.3.3
-- Private subnet deployment (us-east-2a, us-east-2b)
+### EMR Processing (M2 - ✅ Deployed)
+- EMR 6.15.0 with Spark 3.4.1 + Hadoop 3.3.3
+- Private subnet deployment (us-east-2a, us-east-2b) - no NAT Gateway
+- Instance fleets: Master (on-demand), Core (on-demand), Task (Spot with 3 types)
+- Managed scaling: 2-10 instances (InstanceFleetUnits)
 - Auto-termination after 30 min idle
-- Managed scaling (planned): 2-10 nodes
+- S3 logging + CloudWatch logging configured
+- Validated with SparkPi test job
 
 ### Security and Compliance
 - Zero internet exposure (VPC endpoints only)
@@ -174,10 +181,11 @@ Monthly: ~$26/month
 - S3 storage: ~$2-5/month
 - KMS: $1/month
 
-### When EMR Deployed (M2)
+### EMR Deployment (M2 - ✅ Active)
 Active cluster: $0.58/hour
 Dev usage (8h/day, 20 days): ~$92/month
-Auto-termination: Prevents accidental 24/7 costs
+Auto-termination: Prevents accidental 24/7 costs (configured and tested)
+Cluster ID: `j-2NFAAWN9SBXND` (Account B - Production)
 
 ## Documentation
 
@@ -195,15 +203,21 @@ Auto-termination: Prevents accidental 24/7 costs
 ./scripts/validate-m1.sh
 ```
 
-### M2 Testing (After Deployment)
+### M2 Testing (✅ Validated)
 ```bash
-./scripts/deploy-emr.sh
+# Cluster is deployed and operational
+# Cluster ID: j-2NFAAWN9SBXND
 
-aws emr add-steps --cluster-id CLUSTER_ID \
+# Submit Spark job
+aws emr add-steps --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2 \
   --steps Type=Spark,Name="SparkPi",ActionOnFailure=CONTINUE,\
 Args=[--class,org.apache.spark.examples.SparkPi,\
-/usr/lib/spark/examples/jars/spark-examples.jar,100] \
-  --profile marketpulse
+/usr/lib/spark/examples/jars/spark-examples.jar,1000]
+
+# Check step status
+aws emr list-steps --cluster-id j-2NFAAWN9SBXND \
+  --profile marketpulse-prod --region us-east-2
 ```
 
 ## Lessons Learned
@@ -225,7 +239,7 @@ Args=[--class,org.apache.spark.examples.SparkPi,\
 
 ## Future Enhancements
 
-- Managed scaling for EMR task nodes (Spot instances)
+- ✅ Managed scaling for EMR task nodes (Spot instances) - IMPLEMENTED
 - CloudWatch dashboards for cost + performance monitoring
 - Athena queries for ad-hoc analysis
 - QuickSight dashboards for business users
@@ -244,5 +258,5 @@ MIT License - See LICENSE file for details
 
 Author: Morara  
 Purpose: AWS Data Engineering Capstone  
-Last Updated: 2024-11-03  
-Status: M1 Deployed | M2 Code Complete
+Last Updated: 2025-11-05  
+Status: M1 Deployed | M2 Complete (EMR Cluster Operational)

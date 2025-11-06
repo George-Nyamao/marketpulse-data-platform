@@ -68,3 +68,48 @@ variable "vpc_id" {
   description = "VPC ID"
   type        = string
 }
+
+# Managed Scaling Configuration
+variable "managed_scaling_min" {
+  description = "Minimum capacity for managed scaling"
+  type        = number
+  default     = 2
+}
+
+variable "managed_scaling_max" {
+  description = "Maximum capacity for managed scaling"
+  type        = number
+  default     = 10
+}
+
+# Task Instance Fleet Configuration
+variable "task_instance_count" {
+  description = "Initial number of task instances (managed by scaling policy)"
+  type        = number
+  default     = 0  # Start with 0, scaling will add task nodes as needed
+}
+
+# Bootstrap Actions
+variable "bootstrap_actions" {
+  description = "List of bootstrap actions to run on cluster nodes"
+  type = list(object({
+    name = string
+    path = string
+    args = list(string)
+  }))
+  default = []
+}
+
+# CloudWatch Logging (optional)
+variable "cloudwatch_log_group" {
+  description = "CloudWatch log group name for EMR logs (optional)"
+  type        = string
+  default     = null
+}
+
+# KMS Key (optional, for log encryption)
+variable "kms_key_id" {
+  description = "KMS key ID for log encryption (optional)"
+  type        = string
+  default     = null
+}

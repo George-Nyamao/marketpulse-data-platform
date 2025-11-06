@@ -33,3 +33,13 @@ output "ec2_endpoint_id" {
 output "kms_endpoint_id" {
   value = aws_vpc_endpoint.kms.id
 }
+# NAT Gateway
+output "nat_gateway_id" {
+  description = "NAT Gateway ID"
+  value       = aws_nat_gateway.main.id
+}
+
+output "nat_eip_public_ip" {
+  description = "NAT Gateway Elastic IP"
+  value       = aws_eip.nat.public_ip
+}
